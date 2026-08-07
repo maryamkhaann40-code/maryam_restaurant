@@ -39,13 +39,7 @@ export let items = [
     category: "Pizza"
   },
 
-  {
-    name: "BBQ Burger 🍔",
-    price: 750,
-    image: "/images/bbq-burger.jpg",
-    desc: "Juicy BBQ burger with special sauce.",
-    category: "Burger"
-  },
+
 
   {
     name: "Coke 🥤",

@@ -6,207 +6,658 @@ import { CartContext } from "../context/CartContext";
 
 export default function CheckoutPage() {
 
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [address, setAddress] = useState("");
-  const [orderSuccess, setOrderSuccess] = useState(false);
-
   const { cartItems, setCartItems } = useContext(CartContext);
 
   const router = useRouter();
 
+
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
+
+  const [paymentMethod, setPaymentMethod] = useState(
+    "Cash on Delivery"
+  );
+
+
+  const [cardHolder, setCardHolder] = useState("");
+  const [cardNumber, setCardNumber] = useState("");
+  const [expiry, setExpiry] = useState("");
+  const [cvv, setCvv] = useState("");
+
+
+  const [processing, setProcessing] = useState(false);
+  const [orderSuccess, setOrderSuccess] = useState(false);
+
+
   const totalPrice = cartItems.reduce(
-    (total, item) => total + item.price * item.quantity,
+    (total, item) =>
+      total + item.price * item.quantity,
     0
   );
+
+
+  const generateOrderId = () => {
+
+    return (
+      "MR-" +
+      Math.floor(
+        100000 + Math.random() * 900000
+      )
+    );
+
+  };
+
 
   const handleOrder = () => {
 
     if (!name || !phone || !address) {
-      alert("Please fill all fields!");
+
+      alert(
+        "Please fill customer details!"
+      );
+
       return;
+
     }
 
-    const newOrder = {
-      name,
-      phone,
-      address,
-      items: cartItems,
-      total: totalPrice,
-      date: new Date().toLocaleString(),
-      status: "🟡 Pending"
-    };
 
-    const oldOrders = JSON.parse(
-      localStorage.getItem("orders") || "[]"
-    );
+    if (cartItems.length === 0) {
 
-    oldOrders.push(newOrder);
+      alert(
+        "Your cart is empty!"
+      );
 
-    localStorage.setItem(
-      "orders",
-      JSON.stringify(oldOrders)
-    );
+      return;
 
-    setOrderSuccess(true);
+    }
 
-    setCartItems([]);
 
-    setName("");
-    setPhone("");
-    setAddress("");
+    if (paymentMethod === "Debit/Credit Card") {
+
+
+      if (
+        !cardHolder ||
+        !cardNumber ||
+        !expiry ||
+        !cvv
+      ) {
+
+        alert(
+          "Please complete card details!"
+        );
+
+        return;
+
+      }
+
+    }
+
+
+    setProcessing(true);
+
 
     setTimeout(() => {
-      router.push("/orders");
+
+
+      const newOrder = {
+
+        orderId: generateOrderId(),
+
+        name,
+
+        phone,
+
+        address,
+
+        paymentMethod,
+
+        items: cartItems,
+
+        total: totalPrice,
+
+        date:
+          new Date()
+          .toLocaleString(),
+
+        status:
+          "🟢 Confirmed"
+
+      };
+
+
+      const oldOrders =
+        JSON.parse(
+          localStorage.getItem("orders")
+          || "[]"
+        );
+
+
+      oldOrders.push(newOrder);
+
+
+      localStorage.setItem(
+        "orders",
+        JSON.stringify(oldOrders)
+      );
+
+
+      setProcessing(false);
+
+      setOrderSuccess(true);
+
+      setCartItems([]);
+
+
+      setTimeout(() => {
+
+        router.push("/orders");
+
+      }, 2500);
+
+
     }, 2000);
 
-  };
 
-  return (
+  };  return (
 
     <div className="checkout-container">
 
-      <div className="checkout-box">
 
-        <h1 className="checkout-title">
-          Checkout 🛒
-        </h1>
+      {orderSuccess && (
 
-        {orderSuccess && (
+        <div className="success-message">
 
-          <div className="success-message">
+          🎉 Payment Successful!
 
-            🎉 Your Order has been placed successfully!
+          <br />
 
-            <br />
+          Your order has been confirmed.
 
-            Thank you for ordering from
-            <strong> Maryam Restaurant ❤️</strong>
+          <br />
+
+          Thank you for ordering from
+          <strong>
+            {" "}Maryam Restaurant ❤️
+          </strong>
+
+        </div>
+
+      )}
+
+
+
+      <div className="checkout-grid">
+
+
+
+        {/* CUSTOMER DETAILS */}
+
+
+        <div className="checkout-card">
+
+
+          <h1>
+            📝 Customer Details
+          </h1>
+
+
+
+          <input
+
+            type="text"
+
+            placeholder="👤 Full Name"
+
+            value={name}
+
+            onChange={(e)=>
+              setName(e.target.value)
+            }
+
+          />
+
+
+
+          <input
+
+            type="text"
+
+            placeholder="📞 Phone Number"
+
+            value={phone}
+
+            onChange={(e)=>
+              setPhone(e.target.value)
+            }
+
+          />
+
+
+
+          <textarea
+
+            placeholder="📍 Delivery Address"
+
+            value={address}
+
+            onChange={(e)=>
+              setAddress(e.target.value)
+            }
+
+          />
+
+
+
+
+
+          <div className="payment-box">
+
+
+            <h2>
+              💳 Payment Method
+            </h2>
+
+
+
+            <label>
+
+
+              <input
+
+                type="radio"
+
+                value="Cash on Delivery"
+
+                checked={
+                  paymentMethod ===
+                  "Cash on Delivery"
+                }
+
+                onChange={(e)=>
+                  setPaymentMethod(
+                    e.target.value
+                  )
+                }
+
+              />
+
+
+              Cash on Delivery
+
+
+            </label>
+
+
+
+
+            <label>
+
+
+              <input
+
+                type="radio"
+
+                value="Debit/Credit Card"
+
+                checked={
+                  paymentMethod ===
+                  "Debit/Credit Card"
+                }
+
+                onChange={(e)=>
+                  setPaymentMethod(
+                    e.target.value
+                  )
+                }
+
+              />
+
+
+              💳 Debit / Credit Card
+
+
+            </label>
+
+
+
+
+
+            <label>
+
+
+              <input
+
+                type="radio"
+
+                value="Online Payment"
+
+                checked={
+                  paymentMethod ===
+                  "Online Payment"
+                }
+
+                onChange={(e)=>
+                  setPaymentMethod(
+                    e.target.value
+                  )
+                }
+
+              />
+
+
+              📱 Online Payment
+
+
+            </label>
+
+
+
 
           </div>
 
-        )}
 
-        <input
-          type="text"
-          placeholder="👤 Full Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
 
-        <input
-          type="text"
-          placeholder="📞 Phone Number"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-        />
 
-        <textarea
-          placeholder="📍 Delivery Address"
-          value={address}
-          onChange={(e) => setAddress(e.target.value)}
-        />
 
-        <div className="order-summary">
+          {
+            paymentMethod ===
+            "Debit/Credit Card" && (
 
-          <h2>
-            🛒 Order Summary
-          </h2>
 
-          {cartItems.map((item, index) => (
+              <div className="card-form">
 
-            <div key={index}>
 
-              <div className="checkout-item">
+                <h2>
+                  💳 Card Details
+                </h2>
 
-                <img
-                  src={item.image}
-                  alt={item.name}
+
+
+                <input
+
+                  type="text"
+
+                  placeholder="Card Holder Name"
+
+                  value={cardHolder}
+
+                  onChange={(e)=>
+                    setCardHolder(
+                      e.target.value
+                    )
+                  }
+
                 />
 
-                <div className="item-details">
 
-                  <h3>{item.name}</h3>
 
-                  <p>
-                    Price:
-                    <strong>
-                      {" "}Rs {item.price}
-                    </strong>
-                  </p>
+                <input
 
-                  <p>
-                    Quantity:
-                    <strong>
-                      {" "}x {item.quantity}
-                    </strong>
-                  </p>
+                  type="text"
 
-                  <p>
-                    Subtotal:
-                    <strong>
-                      {" "}
-                      Rs {item.price * item.quantity}
-                    </strong>
-                  </p>
+                  placeholder="Card Number"
+
+                  maxLength="16"
+
+                  value={cardNumber}
+
+                  onChange={(e)=>
+                    setCardNumber(
+                      e.target.value
+                    )
+                  }
+
+                />
+
+
+
+                <div className="card-row">
+
+
+                  <input
+
+                    type="text"
+
+                    placeholder="MM/YY"
+
+                    value={expiry}
+
+                    onChange={(e)=>
+                      setExpiry(
+                        e.target.value
+                      )
+                    }
+
+                  />
+
+
+
+                  <input
+
+                    type="password"
+
+                    placeholder="CVV"
+
+                    maxLength="3"
+
+                    value={cvv}
+
+                    onChange={(e)=>
+                      setCvv(
+                        e.target.value
+                      )
+                    }
+
+                  />
+
 
                 </div>
 
+
+
               </div>
 
-              <hr />
 
-            </div>
+            )
+          }
 
-          ))}          <h2 className="total">
-            Total: Rs {totalPrice}
+
+
+          <button
+
+            className="order-btn"
+
+            onClick={handleOrder}
+
+            disabled={processing}
+
+          >
+
+
+            {
+              processing
+              ?
+              "⏳ Processing Payment..."
+              :
+              "✅ Place Order"
+            }
+
+
+          </button>
+
+
+
+        </div>        {/* ORDER SUMMARY */}
+
+        <div className="checkout-card">
+
+
+          <h1>
+            🛒 Order Summary
+          </h1>
+
+
+
+          {
+            cartItems.length === 0
+            ?
+
+            <p>
+              Your cart is empty
+            </p>
+
+            :
+
+            cartItems.map((item,index)=>(
+
+
+              <div
+                className="checkout-item"
+                key={index}
+              >
+
+
+
+                <img
+
+                  src={item.image}
+
+                  alt={item.name}
+
+                />
+
+
+
+                <div>
+
+
+                  <h3>
+                    {item.name}
+                  </h3>
+
+
+
+                  <p>
+                    Quantity:
+                    {" "}
+                    {item.quantity}
+                  </p>
+
+
+
+                  <p>
+                    Price:
+                    {" "}
+                    Rs {item.price}
+                  </p>
+
+
+
+                  <p>
+
+                    Sub Total:
+                    {" "}
+                    Rs {
+                      item.price *
+                      item.quantity
+                    }
+
+                  </p>
+
+
+                </div>
+
+
+
+              </div>
+
+
+            ))
+
+          }
+
+
+
+
+          <hr />
+
+
+
+          <h2 className="total">
+
+            Total:
+            {" "}
+            Rs {totalPrice}
+
           </h2>
 
+
+
+
+
+          <div className="order-info">
+
+
+            <h3>
+              📦 Order Information
+            </h3>
+
+
+            <p>
+
+              <strong>
+                Payment:
+              </strong>
+
+              {" "}
+              {paymentMethod}
+
+            </p>
+
+
+
+            <p>
+
+              <strong>
+                Delivery:
+              </strong>
+
+              {" "}
+              1 hr 20 min
+
+            </p>
+
+
+
+            <p>
+
+              <strong>
+                Status:
+              </strong>
+
+              🟡 Pending
+
+            </p>
+
+
+
+          </div>
+
+
+
         </div>
 
-        <div className="payment payment-box">
 
-          <h3>💳 Payment Method</h3>
 
-          <label className="payment-option">
-
-            <input
-              type="radio"
-              checked
-              readOnly
-            />
-
-            Cash on Delivery
-
-          </label>
-
-        </div>
-
-        <div className="order-info">
-
-          <h3>📦 Order Status</h3>
-
-          <p>
-            <strong>Status:</strong> 🟡 Pending
-          </p>
-
-          <p>
-            <strong>Estimated Delivery:</strong> ⏰ 1 hr 20 min
-          </p>
-
-        </div>
-
-        <button
-          className="order-btn"
-          onClick={handleOrder}
-        >
-          ✅ Place Order
-        </button>
 
       </div>
+
+
 
     </div>
 
   );
+
 
 }
